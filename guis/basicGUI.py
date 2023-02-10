@@ -1,12 +1,4 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Sep  2 19:27:30 2018
-
-@author: robertahunt
-"""
 import sys
-import time
 import logging
 import requests
 import warnings
@@ -41,18 +33,21 @@ class basicGUI(QtWidgets.QWidget):
     def commandLine(self, args):
         assert isinstance(args, list)
         print("Sent command: " + " ".join(args))
-        if args[0] == "gphoto2":
-            captureThread.captureThread.pause()
+        # if args[0] == "gphoto2":
+        #    captureThread.captureThread.pause()
 
         try:
             output = subprocess.check_output(args)
+            print(output)
             if args[0] == "gphoto2":
-                captureThread.captureThread.resume()
+                pass  # captureThread.captureThread.resume()
             return output
         except Exception as ex:
+            print(ex)
             # self.warn('Command %s failed. Exception: %s'%(' '.join(args), ex))
             if args[0] == "gphoto2":
-                captureThread.captureThread.resume()
+                pass
+                # captureThread.captureThread.resume()
             return ex
 
     def warn(self, msg, _exit=False):
@@ -63,39 +58,3 @@ class basicGUI(QtWidgets.QWidget):
         warning.exec_()
         if _exit:
             sys.exit()
-
-    def try_url(self, url):
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-            return response
-        except requests.exceptions.RequestException as err:
-            self.log.info(
-                f'RequestException encountered connecting to url: "{url}", Exception raised: "{err}"'
-            )
-        except requests.exceptions.HTTPError as errh:
-            self.log.info(
-                f'HTTPError encountered connecting to url: "{url}", Exception raised: "{errh}"'
-            )
-        except requests.exceptions.ConnectionError as errc:
-            self.log.info(
-                f'ConnectionError encountered connecting to url: "{url}", Exception raised: "{errc}"'
-            )
-        except requests.exceptions.Timeout as errt:
-            self.log.info(
-                f'Timeout encountered connecting to url: "{url}", Exception raised: "{errt}"'
-            )
-        except Exception as e:
-            self.log.info(f'Error connecting to url: "{url}", Exception raised: "{e}"')
-
-        return None
-
-    # def closeEvent(self, event):
-    # reply = QtGui.QMessageBox.question(self, 'Message',
-    #    "Are you sure to quit?", QtGui.QMessageBox.Yes |
-    #    QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-
-    # if reply == QtGui.QMessageBox.Yes:
-    #    event.accept()
-    # else:
-    #    event.ignore()
