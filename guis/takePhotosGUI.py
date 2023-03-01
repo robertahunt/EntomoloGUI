@@ -69,8 +69,8 @@ class takePhotosGUI(basicGUI):
 
     def takePhotos(self):
         self.log.info("Got Command to Take Photos")
-        # self.progress = progressDialog()
-        # self.progress._open()
+        self.progress = progressDialog()
+        self.progress._open()
 
         self.log.info("Started Taking Photos")
 
@@ -93,20 +93,20 @@ class takePhotosGUI(basicGUI):
             # print("self.finished", self.finished)
             n_finished = sum(self.finished.values())
             n_failed = sum([x == None for x in self.results.values()])
-            # progress = int(100 * n_finished / len(self.finished))
-            # self.progress.update(
-            #    progress,
-            #    f"{n_finished} / {len(self.finished)} cameras returned, {n_failed} Failed",
-            # )
+            progress = int(100 * n_finished / len(self.finished))
+            self.progress.update(
+                progress,
+                f"{n_finished} / {len(self.finished)} cameras returned, {n_failed} Failed",
+            )
             if self.all_finished:
                 break
 
             # Prevents infinite loop if something goes wrong.
             i += 1
-            if i > 50:
+            if i > 5000:
                 break
 
-        # self.progress._close()
+        self.progress._close()
         self.savePhotos(self.results)
 
     def savePhotos(self, filenames):
@@ -153,5 +153,6 @@ class takeSinglePhotoWorker(QRunnable):
             self.signals.error.emit((exctype, value, traceback.format_exc()))
         finally:
             print("Doing finally things for camera at ", self.camera.address)
-            self.signals.result.emit([self.camera, result])
+            out = [self.camera, result]
+            self.signals.result.emit(out)
             self.signals.finished.emit()  # Done

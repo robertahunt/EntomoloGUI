@@ -18,11 +18,11 @@ class bigPiEyePreviewWorker(QRunnable):
     This can be used for checking the focus of the camera.
     """
 
-    def __init__(self, gui):
+    def __init__(self, address):
         super(bigPiEyePreviewWorker, self).__init__()
 
         # Store constructor arguments (re-used for processing)
-        self.gui = gui
+        self.address = address
         self.signals = WorkerSignals()
         self.still_running = True
 
@@ -35,7 +35,7 @@ class bigPiEyePreviewWorker(QRunnable):
             time.sleep(0.1)
             # Retrieve args/kwargs here; and fire processing using them
             try:
-                result = self.gui.get_image()
+                result = self.getPreview()
             except:
                 traceback.print_exc()
                 exctype, value = sys.exc_info()[:2]
@@ -49,6 +49,26 @@ class bigPiEyePreviewWorker(QRunnable):
         """
         self.still_running = False  # ends the loops/worker above
         self.signals.finished.emit()
+
+    def getPreview(self):
+        take_img_url = f"http://{self.address}:8080/takeAndCacheImage"
+        response = try_url(take_img_url)
+
+        if response is None:
+            return None
+
+        cached_img_name = json.loads(response.content)["image_name"]
+
+        get_cached_img_url = (
+            f"http://{self.address}:8080/getCachedImage/{cached_img_name}"
+        )
+        response = try_url(get_cached_img_url)
+
+        if response is None:
+            return None
+
+        data = imageio.imread(response.content)
+        return data
 
 
 class bigPiEyePreviewGUI(basicGUI):
@@ -105,23 +125,3 @@ class bigPiEyePreviewGUI(basicGUI):
         )
 
         self.img.setPixmap(preview_img)
-
-    def getPreview(self):
-        take_img_url = f"http://{self.address}:8080/takeAndCacheImage"
-        response = try_url(take_img_url)
-
-        if response is None:
-            return None
-
-        cached_img_name = json.loads(response.content)["image_name"]
-
-        get_cached_img_url = (
-            f"http://{self.address}:8080/getCachedImage/{cached_img_name}"
-        )
-        response = try_url(get_cached_img_url)
-
-        if response is None:
-            return None
-
-        data = imageio.imread(response.content)
-        return data
